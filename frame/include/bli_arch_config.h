@@ -137,6 +137,12 @@ INSERT_GENTCONF
 #ifdef BLIS_FAMILY_FIRESTORM
 #include "bli_family_firestorm.h"
 #endif
+
+// Apple M1 matrix coprocessor
+#ifdef BLIS_KERNELS_APPLEM1
+#include "bli_family_applem1.h"
+#endif
+
 // ARM-NEON (2x128)
 #ifdef BLIS_FAMILY_THUNDERX2
 #include "bli_family_thunderx2.h"
