@@ -140,6 +140,7 @@ INSERT_GENTCONF
 
 // Apple M1 matrix coprocessor
 #ifdef BLIS_KERNELS_APPLEM1
+#ifdef BLIS_FAMILY_APPLEM1
 #include "bli_family_applem1.h"
 #endif
 
