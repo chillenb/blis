@@ -42,7 +42,7 @@ altra:       altra/armv8a
 firestorm:   firestorm/armv8a
 
 # apple m1
-applem1:     applem1/armv8a/aaplmx
+aaplmx:      aaplmx/armv8a/aaplmx
 
 # ARM (2 pipes x 128b) architectures.
 thunderx2:   thunderx2/armv8a

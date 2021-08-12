@@ -269,8 +269,8 @@ arch_t bli_arch_query_id_impl( void )
 		id = BLIS_ARCH_FIRESTORM;
 		#endif
 
-		#ifdef BLIS_FAMILY_APPLEM1
-		id = BLIS_ARCH_APPLEM1;
+		#ifdef BLIS_FAMILY_AAPLMX
+		id = BLIS_ARCH_AAPLMX;
 		#endif
 
 		#ifdef BLIS_FAMILY_THUNDERX2

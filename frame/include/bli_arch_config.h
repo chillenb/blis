@@ -139,9 +139,8 @@ INSERT_GENTCONF
 #endif
 
 // Apple M1 matrix coprocessor
-#ifdef BLIS_KERNELS_APPLEM1
-#ifdef BLIS_FAMILY_APPLEM1
-#include "bli_family_applem1.h"
+#ifdef BLIS_FAMILY_AAPLMX
+#include "bli_family_aaplmx.h"
 #endif
 
 // ARM-NEON (2x128)

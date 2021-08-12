@@ -986,7 +986,7 @@ typedef enum arch_e
 	BLIS_ARCH_FIRESTORM,
 
 	// Apple M1 matrix coprocessor
-	BLIS_ARCH_APPLEM1,
+	BLIS_ARCH_AAPLMX,
 
 	// ARM (2 pipes x 128-bit vectors)
 	BLIS_ARCH_THUNDERX2,
