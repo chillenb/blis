@@ -11,7 +11,8 @@ _Recipient of the **[2020 SIAM Activity Group on Supercomputing Best Paper Prize
 
 [<img alt="Discord logo" title="Join us on Discord!" height="32px" src="docs/images/discord.svg" />](docs/Discord.md)
 
-As of Jul., 2021, the coprocessor is undocumented but not protected either. (Any user / program is allowed to invoke this coprocessor and it's supposed to be safe.) This work is based on Dougall Johnson's effort on analyzing the related instructions.
+Contents
+--------
 
 * **[Introduction](#introduction)**
 * **[Education and Learning](#education-and-learning)**
