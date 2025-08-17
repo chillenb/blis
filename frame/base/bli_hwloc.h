@@ -5,8 +5,6 @@
    libraries.
 
    Copyright (C) 2014, The University of Texas at Austin
-   Copyright (C) 2016, Hewlett Packard Enterprise Development LP
-   Copyright (C) 2018 - 2019, Advanced Micro Devices, Inc.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions are
@@ -32,40 +30,13 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 */
 
-#include "blis.h"
 
-int bli_memsys_init( void )
-{
-	// NOTE: This function is called once by ONLY ONE application thread per
-	// library init/finalize cycle (see bli_init.c). Thus, a mutex is not
-	// needed to protect the data initialization.
+#ifndef BLIS_HWLOC_H
+#define BLIS_HWLOC_H
 
-	// Query a native context so we have something to pass into
-	// bli_pba_init_pools().
-	// NOTE: We intentionally call bli_gks_query_cntx_noinit() in order
-	// to avoid the internal call to bli_init_once().
-	const cntx_t* cntx_p = bli_gks_query_cntx_noinit();
-  const rntm_t* rntm_p = bli_global_rntm_at_init();
 
-	// Initialize the packing block allocator and its data structures.
-	bli_pba_init( cntx_p, rntm_p );
 
-	// Initialize the small block allocator and its data structures.
-	bli_sba_init();
-
-	return 0;
-}
-
-int bli_memsys_finalize( void )
-{
-	// Finalize the small block allocator and its data structures.
-	bli_sba_finalize();
-
-	// Finalize the packing block allocator and its data structures.
-	bli_pba_finalize();
-
-	return 0;
-}
-
+#endif

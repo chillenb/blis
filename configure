@@ -235,6 +235,11 @@ print_usage()
                  it no longer needs to call malloc() or free(), even
                  across many separate level-3 operation invocations.
 
+	 --enable-hwloc, --disable-hwloc
+
+                 Enable (disabled by default) use of the hwloc library
+                 for performance improvement on multi-socket systems.
+
    --enable-mem-tracing, --disable-mem-tracing
 
                  Enable (disabled by default) output to stdout that traces
@@ -3019,6 +3024,7 @@ blis_main()
 	export_shared='public'
 	enable_pba_pools='yes'
 	enable_sba_pools='yes'
+	enable_hwloc='yes'
 	enable_mem_tracing='no'
 	int_type_size=0
 	blas_int_type_size=32
@@ -3216,6 +3222,13 @@ blis_main()
 							;;
 						disable-sba-pools)
 							enable_sba_pools='no'
+							;;
+
+						enable-hwloc)
+							enable_hwloc='yes'
+							;;
+						disable-hwloc)
+							enable_hwloc='no'
 							;;
 
 						enable-mem-tracing)
@@ -3953,6 +3966,13 @@ blis_main()
 		echo "${script_name}: internal memory pools for small blocks are disabled."
 		enable_sba_pools_01=0
 	fi
+	if [[ ${enable_hwloc} = yes ]]; then
+		echo "${script_name}: hwloc support is enabled."
+		enable_hwloc_01=1
+	else
+		echo "${script_name}: hwloc support is disabled."
+		enable_hwloc_01=0
+	fi
 	if [[ ${enable_mem_tracing} = yes ]]; then
 		echo "${script_name}: memory tracing output is enabled."
 		enable_mem_tracing_01=1
@@ -4372,6 +4392,8 @@ blis_main()
 	add_config_var enable_jrir_tlb           enable_jrir_tlb_01
 	add_config_var enable_pba_pools          enable_pba_pools_01
 	add_config_var enable_sba_pools          enable_sba_pools_01
+	add_config_var mk_enable_hwloc           enable_hwloc
+	add_config_var enable_hwloc              enable_hwloc_01
 	add_config_var enable_mem_tracing        enable_mem_tracing_01
 	add_config_var int_type_size
 	add_config_var blas_int_type_size

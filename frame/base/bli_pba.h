@@ -123,7 +123,8 @@ BLIS_EXPORT_BLIS pba_t* bli_pba_query( void );
 
 void bli_pba_init
      (
-       const cntx_t* cntx
+       const cntx_t* cntx,
+       const rntm_t* rntm
      );
 void bli_pba_finalize
      (
@@ -155,6 +156,7 @@ siz_t bli_pba_pool_size
 void bli_pba_init_pools
      (
        const cntx_t* cntx,
+			 const rntm_t* rntm,
              pba_t*  pba
      );
 void bli_pba_finalize_pools

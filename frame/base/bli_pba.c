@@ -48,7 +48,8 @@ pba_t* bli_pba_query( void )
 
 void bli_pba_init
      (
-       const cntx_t* cntx
+       const cntx_t* cntx,
+			 const rntm_t* rntm
      )
 {
 	pba_t* pba = bli_pba_query();
@@ -68,7 +69,7 @@ void bli_pba_init
 	// something going wrong during mutex initialization.
 
 #ifdef BLIS_ENABLE_PBA_POOLS
-	bli_pba_init_pools( cntx, pba );
+	bli_pba_init_pools( cntx, rntm, pba );
 #endif
 }
 
@@ -305,6 +306,7 @@ siz_t bli_pba_pool_size
 void bli_pba_init_pools
      (
        const cntx_t* cntx,
+			 const rntm_t* rntm,
              pba_t*  pba
      )
 {

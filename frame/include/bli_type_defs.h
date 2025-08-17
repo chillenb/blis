@@ -1045,6 +1045,8 @@ typedef struct pool_s
 	void*     block_ptrs;
 	dim_t     block_ptrs_len;
 
+
+
 	dim_t     top_index;
 	dim_t     num_blocks;
 
@@ -1105,6 +1107,7 @@ typedef struct mem_s
 	packbuf_t buf_type;
 	pool_t*   pool;
 	siz_t     size;
+	dim_t     numa_node;
 } mem_t;
 
 

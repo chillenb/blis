@@ -89,6 +89,9 @@ typedef struct thrcomm_s
 	dim_t       n_threads;
 	timpl_t     ti;
 
+	// struct hwloc_topology*
+	void*				topology;
+
 	// We insert a cache line of padding here to eliminate false sharing between
 	// the fields above and fields below.
 	char   padding1[ BLIS_CACHE_LINE_SIZE ];

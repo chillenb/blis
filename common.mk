@@ -624,6 +624,7 @@ else
 LIBM       := -lm
 endif
 LIBMEMKIND := -lmemkind
+LIBHWLOC   := -lhwloc
 
 # Default linker flags.
 # NOTE: -lpthread is needed unconditionally because BLIS uses pthread_once()
@@ -634,6 +635,10 @@ LDFLAGS    := $(LDFLAGS_PRESET) $(LIBM) $(LIBPTHREAD)
 # Add libmemkind to the link-time flags, if it was enabled at configure-time.
 ifeq ($(MK_ENABLE_MEMKIND),yes)
 LDFLAGS    += $(LIBMEMKIND)
+endif
+
+ifeq ($(MK_ENABLE_HWLOC),yes)
+LDFLAGS    += $(LIBHWLOC)
 endif
 
 # Never use libm with Intel compilers.
