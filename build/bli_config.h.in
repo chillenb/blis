@@ -168,6 +168,12 @@
 #define BLIS_DISABLE_MEMKIND
 #endif
 
+#if @enable_hwloc@
+#define BLIS_ENABLE_HWLOC
+#else
+#define BLIS_DISABLE_HWLOC
+#endif
+
 #if @enable_trsm_preinversion@
 #define BLIS_ENABLE_TRSM_PREINVERSION
 #else

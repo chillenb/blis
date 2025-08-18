@@ -128,6 +128,7 @@ extern "C" {
 #include "bli_stack.h"
 #include "bli_check.h"
 #include "bli_cntx.h"
+#include "bli_hwdata.h"
 #include "bli_rntm.h"
 #include "bli_gks.h"
 #include "bli_ind.h"

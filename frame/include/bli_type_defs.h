@@ -1490,6 +1490,18 @@ typedef struct rntm_s
 } rntm_t;
 
 
+typedef struct hwdata_s
+{
+	void*     hwloc_topology;
+	void*     hwloc_cpubind_at_init;
+	dim_t*    cores_to_numa_node_map;
+	dim_t     num_numa_nodes;
+	dim_t     num_total_cores;
+	dim_t     num_avail_cores;
+	bool      omp_was_init_with_proc_bind;
+} hwdata_t;
+
+
 // -- Error types --
 
 typedef enum errlev_e

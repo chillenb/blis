@@ -203,6 +203,9 @@ MK_ENABLE_CBLAS   := @mk_enable_cblas@
 # Whether libblis will depend on libmemkind for certain memory allocations.
 MK_ENABLE_MEMKIND := @mk_enable_memkind@
 
+# Whether libblis will depend on hwloc
+MK_ENABLE_HWLOC   := @mk_enable_hwloc@
+
 # The names of the addons to include when building BLIS. If empty, no addons
 # will be included.
 ADDON_LIST        := @addon_list@

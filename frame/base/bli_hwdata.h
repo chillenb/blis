@@ -37,6 +37,28 @@
 #ifndef BLIS_HWLOC_H
 #define BLIS_HWLOC_H
 
+// typedef struct hwdata_s
+// {
+// 	void*     hwloc_topology;
+// 	void*     hwloc_cpubind_at_init;
+// 	dim_t*    cores_to_numa_node_map;
+// 	dim_t     num_numa_nodes;
+// 	dim_t     num_total_cores;
+// 	dim_t     num_avail_cores;
+// 	bool      omp_was_init_with_proc_bind;
+// } hwdata_t;
 
+#define BLIS_HWDATA_INITIALIZER \
+        { \
+          /* .hwloc_topology = */ NULL, \
+          /* .hwloc_cpubind_at_init = */ NULL, \
+          /* .cores_to_numa_node_map = */ NULL, \
+          /* .num_numa_nodes = */ 0, \
+          /* .num_total_cores = */ 0, \
+          /* .num_avail_cores = */ 0, \
+          /* .omp_was_init_with_proc_bind = */ FALSE, \
+        } \
 
+int bli_hwdata_init( void );
+int bli_hwdata_finalize( void );
 #endif

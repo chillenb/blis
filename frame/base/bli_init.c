@@ -79,6 +79,7 @@ void bli_finalize_once( void )
 static bli_pthread_switch_t gks_g_state    = BLIS_PTHREAD_SWITCH_INIT;
 static BLIS_THREAD_LOCAL
        bli_pthread_switch_t ind_l_state    = BLIS_PTHREAD_SWITCH_INIT;
+static bli_pthread_switch_t hwdata_g_state = BLIS_PTHREAD_SWITCH_INIT;
 static bli_pthread_switch_t thread_g_state = BLIS_PTHREAD_SWITCH_INIT;
 static BLIS_THREAD_LOCAL
        bli_pthread_switch_t rntm_l_state   = BLIS_PTHREAD_SWITCH_INIT;
@@ -89,6 +90,7 @@ int bli_init_apis( void )
 	// Initialize various sub-APIs.
 	bli_pthread_switch_on( &gks_g_state,    bli_gks_init );
 	bli_pthread_switch_on( &ind_l_state,    bli_ind_init );
+  bli_pthread_switch_on( &hwdata_g_state, bli_hwdata_init );
 	bli_pthread_switch_on( &thread_g_state, bli_thread_init );
 	bli_pthread_switch_on( &rntm_l_state,   bli_rntm_init );
 	bli_pthread_switch_on( &memsys_g_state, bli_memsys_init );
@@ -102,6 +104,7 @@ int bli_finalize_apis( void )
 	bli_pthread_switch_off( &memsys_g_state, bli_memsys_finalize );
 	bli_pthread_switch_off( &rntm_l_state,   bli_rntm_finalize );
 	bli_pthread_switch_off( &thread_g_state, bli_thread_finalize );
+  bli_pthread_switch_off( &hwdata_g_state, bli_hwdata_finalize );
 	bli_pthread_switch_off( &ind_l_state,    bli_ind_finalize );
 	bli_pthread_switch_off( &gks_g_state,    bli_gks_finalize );
 
