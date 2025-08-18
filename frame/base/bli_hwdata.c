@@ -48,10 +48,27 @@ static hwdata_t global_hwdata = BLIS_HWDATA_INITIALIZER;
 
 hwdata_t* bli_global_hwdata( void ) { return &global_hwdata; }
 
+
+static void log_hwdata( void )
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  printf( "bli_hwdata_init():\n" );
+  printf( "  num_numa_nodes: %zu\n", hwdata->num_numa_nodes );
+  printf( "  num_total_cores: %zu\n", hwdata->num_total_cores );
+  printf( "  num_avail_cores: %zu\n", hwdata->num_avail_cores );
+  printf( "  cores to numa node map:\n");
+  for(dim_t i = 0; i < hwdata->num_total_cores; i++)
+  {
+    printf( "    core %zu -> numa node %zu\n", i, hwdata->cores_to_numa_node_map[i] );
+  }
+}
+
 int bli_hwdata_init( void )
 {
   err_t rval;
 	hwdata_t* hwdata = bli_global_hwdata();
+
+	bool do_logging = bli_env_get_var( "BLIS_HWDATA_DEBUG", 0 );
 
 #ifdef BLIS_ENABLE_HWLOC
 
@@ -70,7 +87,10 @@ int bli_hwdata_init( void )
     HWLOC_CPUBIND_PROCESS
   );
 
-  hwdata->num_avail_cores = hwloc_bitmap_weight( (hwloc_cpuset_t) hwdata->hwloc_cpubind_at_init );
+  hwloc_cpuset_t cpubind_nosmt = hwloc_bitmap_dup( (hwloc_cpuset_t) hwdata->hwloc_cpubind_at_init );
+  hwloc_bitmap_singlify_per_core( topo, cpubind_nosmt, 0 );
+  hwdata->num_avail_cores = hwloc_bitmap_weight( cpubind_nosmt );
+  hwloc_bitmap_free( cpubind_nosmt );
 
   hwdata->cores_to_numa_node_map = (dim_t*) bli_calloc_intl( hwdata->num_total_cores * sizeof(dim_t), &rval );
 
@@ -91,6 +111,9 @@ int bli_hwdata_init( void )
   hwloc_bitmap_free( iter_nodeset );
 
   hwdata->hwloc_topology = (void*) topo;
+
+  if( do_logging )
+    log_hwdata();
 
 #endif
 
