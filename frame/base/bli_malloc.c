@@ -39,7 +39,6 @@
 // not portable, only works on linux.
 #ifdef __linux__
 #include <sys/mman.h>
-#include <sys/param.h>
 #ifndef MADV_HUGEPAGE
 #define MADV_HUGEPAGE 14
 #endif
@@ -163,7 +162,7 @@ void* bli_hugepage_alloc_intl( size_t size, err_t* r_val )
 	#endif
 
 	const size_t alignment = BLIS_HUGE_PAGE_SIZE;
-	const size_t rounded_size = roundup(size, alignment);
+	const size_t rounded_size = (((size) + ((alignment) - 1)) / (alignment)) * (alignment);
 
 	posix_memalign( &p, alignment, rounded_size );
 	int retval = 0;
