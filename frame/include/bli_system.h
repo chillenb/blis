@@ -42,6 +42,14 @@
 #define _POSIX_C_SOURCE 200809L
 #endif
 
+// Do we need madvise? Then we have to define _DEFAULT_SOURCE here,
+// before any system headers are included.
+#ifdef BLIS_ENABLE_PBA_HUGEPAGE_NUMA
+#ifdef __linux__
+#define _DEFAULT_SOURCE
+#endif
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

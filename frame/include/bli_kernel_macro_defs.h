@@ -160,6 +160,12 @@
 #define BLIS_PAGE_SIZE                   4096
 #endif
 
+// Size of a transparent hugepage, if supported.
+#ifndef BLIS_HUGE_PAGE_SIZE
+#define BLIS_HUGE_PAGE_SIZE               2097152
+#endif
+
+
 // The maximum number of named SIMD vector registers available for use.
 // When configuring with umbrella configuration families, this should be
 // set to the maximum number of registers across all sub-configurations in

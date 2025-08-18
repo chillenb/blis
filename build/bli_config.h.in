@@ -168,6 +168,12 @@
 #define BLIS_DISABLE_MEMKIND
 #endif
 
+#if @enable_pba_hugepage_numa@
+#define BLIS_ENABLE_PBA_HUGEPAGE_NUMA
+#else
+#define BLIS_DISABLE_PBA_HUGEPAGE_NUMA
+#endif
+
 #if @enable_hwloc@
 #define BLIS_ENABLE_HWLOC
 #else
