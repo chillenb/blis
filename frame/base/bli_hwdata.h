@@ -48,6 +48,7 @@
 // 	bool      omp_was_init_with_proc_bind;
 // } hwdata_t;
 
+#include "blis.h"
 #define BLIS_HWDATA_INITIALIZER \
         { \
           /* .hwloc_topology = */ NULL, \
@@ -58,7 +59,17 @@
           /* .num_avail_cores = */ 0, \
           /* .omp_was_init_with_proc_bind = */ FALSE, \
         } \
+#endif
 
 int bli_hwdata_init( void );
 int bli_hwdata_finalize( void );
-#endif
+
+BLIS_EXPORT_BLIS hwdata_t* bli_global_hwdata( void );
+
+BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_numa_nodes( void );
+
+BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_total_cores( void );
+
+BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_avail_cores( void );
+
+BLIS_EXPORT_BLIS dim_t* bli_hwdata_get_cores_to_numa_node_map( void );

@@ -1034,6 +1034,7 @@ typedef struct pblk_s
 {
 	void*     buf;
 	siz_t     block_size;
+	dim_t		  numa_node;
 
 } pblk_t;
 
@@ -1097,6 +1098,40 @@ typedef struct pba_s
 	free_ft             free_fp;
 
 } pba_t;
+
+
+// A set of three pools (A, B, C) that reside
+// on a specific NUMA node. 
+
+typedef struct numa_poolset_s
+{
+	dim_t		  						numa_node;
+	bli_pthread_mutex_t 	mutex;
+	void*     						block_ptrs[3];
+	dim_t     						block_ptrs_len[3];
+
+	dim_t     						top_index[3];
+	dim_t     						num_blocks[3];
+
+	siz_t     						block_size[3];
+	siz_t     						align_size[3];
+	siz_t     						offset_size[3];
+
+} numa_poolset_t;
+
+
+// -- NUMA-aware packing block allocator
+
+typedef struct numa_pba_s
+{
+	numa_poolset_t*         poolsets;
+	bli_pthread_mutex_t 		mutex;
+
+	// These fields are used for general-purpose allocation.
+	siz_t               		align_size;
+	malloc_ft           		malloc_fp;
+	free_ft             		free_fp;
+} numa_pba_t;
 
 
 // -- Memory object type --

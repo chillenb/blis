@@ -133,3 +133,27 @@ int bli_hwdata_finalize( void )
 #endif
   return 0;
 }
+
+dim_t bli_hwdata_get_num_numa_nodes( void )
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  return hwdata->num_numa_nodes;
+}
+
+dim_t bli_hwdata_get_num_total_cores( void )
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  return hwdata->num_total_cores;
+}
+
+dim_t bli_hwdata_get_num_avail_cores( void )
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  return hwdata->num_avail_cores;
+}
+
+dim_t* bli_hwdata_get_cores_to_numa_node_map( void )
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  return hwdata->cores_to_numa_node_map;
+}
