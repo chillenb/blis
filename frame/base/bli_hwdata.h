@@ -54,12 +54,13 @@
           /* .hwloc_topology = */ NULL, \
           /* .hwloc_cpubind_at_init = */ NULL, \
           /* .cores_to_numa_node_map = */ NULL, \
+          /* .numa_nodesets = */ NULL, \
           /* .num_numa_nodes = */ 0, \
           /* .num_total_cores = */ 0, \
           /* .num_avail_cores = */ 0, \
           /* .omp_was_init_with_proc_bind = */ FALSE, \
         } \
-#endif
+
 
 int bli_hwdata_init( void );
 int bli_hwdata_finalize( void );
@@ -73,3 +74,5 @@ BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_total_cores( void );
 BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_avail_cores( void );
 
 BLIS_EXPORT_BLIS dim_t* bli_hwdata_get_cores_to_numa_node_map( void );
+
+#endif

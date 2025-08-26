@@ -235,13 +235,13 @@ print_usage()
                  it no longer needs to call malloc() or free(), even
                  across many separate level-3 operation invocations.
 
-	 --enable-pba-hugepage-numa, --disable-pba-hugepage-numa
+   --enable-pba-hugepage-numa, --disable-pba-hugepage-numa
 
-								 Enable (disabled by default) the use of transparent hugepages
-								 for the packing block allocator on Linux systems. This option
-								 also enables NUMA awareness in the packing block allocator.
+                 Enable (disabled by default) the use of transparent hugepages
+                 for the packing block allocator on Linux systems. This option
+                 also enables NUMA awareness in the packing block allocator.
 
-	 --enable-hwloc, --disable-hwloc
+   --enable-hwloc, --disable-hwloc
 
                  Enable (disabled by default) use of the hwloc library
                  for performance improvement on multi-socket systems.

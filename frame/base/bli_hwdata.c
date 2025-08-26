@@ -92,6 +92,10 @@ int bli_hwdata_init( void )
   hwdata->num_avail_cores = hwloc_bitmap_weight( cpubind_nosmt );
   hwloc_bitmap_free( cpubind_nosmt );
 
+  hwloc_nodeset_t* numa_nodesets = (hwloc_nodeset_t*) bli_calloc_intl( hwdata->num_numa_nodes * sizeof(hwloc_nodeset_t), &rval );
+  for(dim_t i = 0; i < hwdata->num_numa_nodes; i++)
+    numa_nodesets[i] = hwloc_bitmap_alloc();
+
   hwdata->cores_to_numa_node_map = (dim_t*) bli_calloc_intl( hwdata->num_total_cores * sizeof(dim_t), &rval );
 
   hwloc_cpuset_t iter_cpuset = hwloc_bitmap_alloc();

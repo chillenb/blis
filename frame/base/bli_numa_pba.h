@@ -160,7 +160,7 @@ void bli_numa_pba_init_poolsets
      (
        const cntx_t* cntx,
 			 const rntm_t* rntm,
-             pba_t*  pba
+             numa_pba_t*  pba
      );
 void bli_pba_finalize_pools
      (

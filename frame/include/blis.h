@@ -139,6 +139,7 @@ extern "C" {
 #include "bli_sba.h"
 #include "bli_memsys.h"
 #include "bli_mem.h"
+#include "bli_numa_pba.h"
 #include "bli_part.h"
 #include "bli_part_cntl.h"
 #include "bli_prune.h"
