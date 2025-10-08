@@ -47,7 +47,6 @@ BLIS_EXPORT_BLIS void   bli_free_pool( void* p );
 void* bli_malloc_intl( size_t size, err_t* r_val );
 void* bli_calloc_intl( size_t size, err_t* r_val );
 void  bli_free_intl( void* p );
-void* bli_hugepage_alloc_intl( size_t size, err_t* r_val );
 
 BLIS_EXPORT_BLIS void* bli_malloc_user( size_t size, err_t* r_val );
 BLIS_EXPORT_BLIS void  bli_free_user( void* p );

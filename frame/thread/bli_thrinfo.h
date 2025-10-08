@@ -64,7 +64,11 @@ struct thrinfo_s
 	pool_t*            sba_pool;
 
 	// The packing block allocator.
-	pba_t*             pba;
+	union
+  {
+    pba_t*             pba;
+    numa_pba_t         numa_pba;
+  };
 
 	// Storage for allocated memory obtained from the packing block allocator.
 	mem_t              mem;

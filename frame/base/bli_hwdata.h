@@ -37,16 +37,18 @@
 #ifndef BLIS_HWLOC_H
 #define BLIS_HWLOC_H
 
-// typedef struct hwdata_s
-// {
-// 	void*     hwloc_topology;
-// 	void*     hwloc_cpubind_at_init;
-// 	dim_t*    cores_to_numa_node_map;
-// 	dim_t     num_numa_nodes;
-// 	dim_t     num_total_cores;
-// 	dim_t     num_avail_cores;
-// 	bool      omp_was_init_with_proc_bind;
-// } hwdata_t;
+/*
+typedef struct hwdata_s
+{
+	void*     hwloc_topology;
+	void**    numa_nodesets;
+	dim_t*    cores_to_numa_node_map;
+	dim_t     num_numa_nodes;
+	dim_t     num_total_cores;
+	dim_t     num_avail_cores;
+	bool      omp_was_init_with_proc_bind;
+} hwdata_t;
+*/
 
 #include "blis.h"
 #define BLIS_HWDATA_INITIALIZER \
@@ -74,5 +76,11 @@ BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_total_cores( void );
 BLIS_EXPORT_BLIS dim_t bli_hwdata_get_num_avail_cores( void );
 
 BLIS_EXPORT_BLIS dim_t* bli_hwdata_get_cores_to_numa_node_map( void );
+
+BLIS_EXPORT_BLIS void* bli_hwdata_alloc_on_numanode(siz_t len, dim_t numanode, err_t *rval);
+
+BLIS_EXPORT_BLIS void* bli_hwdata_alloc_localto_cpu(siz_t len, dim_t cpu_idx, err_t *rval);
+
+BLIS_EXPORT_BLIS void bli_hwdata_free(void *ptr, siz_t len);
 
 #endif

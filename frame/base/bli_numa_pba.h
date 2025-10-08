@@ -58,7 +58,7 @@ typedef struct numa_poolset_s
 
 typedef struct numa_pba_s
 {
-	numa_poolset_t*         poolsets;
+	numa_poolset_t**        poolsets;
 	bli_pthread_mutex_t 		mutex;
 
 	// These fields are used for general-purpose allocation.

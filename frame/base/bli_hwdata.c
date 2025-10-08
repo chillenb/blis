@@ -35,6 +35,16 @@
 
 #include "blis.h"
 
+#ifdef BLIS_ENABLE_PBA_HUGEPAGE_NUMA
+// not portable, only works on linux.
+#ifdef __linux__
+#include <sys/mman.h>
+#ifndef MADV_HUGEPAGE
+#define MADV_HUGEPAGE 14
+#endif
+#endif
+#endif
+
 #ifdef BLIS_ENABLE_HWLOC
 #include <hwloc.h>
 #endif
@@ -79,40 +89,32 @@ int bli_hwdata_init( void )
   hwdata->num_numa_nodes = hwloc_get_nbobjs_by_type( topo, HWLOC_OBJ_NUMANODE );
   hwdata->num_total_cores = hwloc_get_nbobjs_by_type( topo, HWLOC_OBJ_CORE );
 
-  hwdata->hwloc_cpubind_at_init = (void*) hwloc_bitmap_alloc();
-  hwloc_get_cpubind
-  (
-    topo, 
-    (hwloc_cpuset_t) hwdata->hwloc_cpubind_at_init,
-    HWLOC_CPUBIND_PROCESS
-  );
-
-  hwloc_cpuset_t cpubind_nosmt = hwloc_bitmap_dup( (hwloc_cpuset_t) hwdata->hwloc_cpubind_at_init );
-  hwloc_bitmap_singlify_per_core( topo, cpubind_nosmt, 0 );
-  hwdata->num_avail_cores = hwloc_bitmap_weight( cpubind_nosmt );
-  hwloc_bitmap_free( cpubind_nosmt );
+  hwdata->num_avail_cores = hwdata->num_total_cores;
 
   hwloc_nodeset_t* numa_nodesets = (hwloc_nodeset_t*) bli_calloc_intl( hwdata->num_numa_nodes * sizeof(hwloc_nodeset_t), &rval );
+
+  // get node sets for all NUMA nodes.
   for(dim_t i = 0; i < hwdata->num_numa_nodes; i++)
-    numa_nodesets[i] = hwloc_bitmap_alloc();
+  {
+    hwloc_obj_t obj = hwloc_get_obj_by_type( topo, HWLOC_OBJ_NUMANODE, i );
+    if( obj == NULL )
+    {
+      fprintf( stderr, "hwloc_get_obj_by_type() failed to find NUMA node %zu\n", i );
+      bli_abort();
+    }
+    numa_nodesets[i] = obj->nodeset;
+  }
 
   hwdata->cores_to_numa_node_map = (dim_t*) bli_calloc_intl( hwdata->num_total_cores * sizeof(dim_t), &rval );
 
-  hwloc_cpuset_t iter_cpuset = hwloc_bitmap_alloc();
-  hwloc_bitmap_zero(iter_cpuset);
-  hwloc_nodeset_t iter_nodeset = hwloc_bitmap_alloc();
-  hwloc_bitmap_zero(iter_nodeset);
 
   for(dim_t i = 0; i < hwdata->num_total_cores; i++)
   {
-    hwloc_bitmap_only( iter_cpuset, i );
-    hwloc_cpuset_to_nodeset( topo, iter_cpuset, iter_nodeset );
-    hwdata->cores_to_numa_node_map[i] = hwloc_bitmap_first( iter_nodeset );
-    hwloc_bitmap_zero( iter_nodeset );
+    hwloc_obj_t core = hwloc_get_obj_by_type( topo, HWLOC_OBJ_CORE, i );
+    hwloc_obj_t numanode = hwloc_get_ancestor_obj_by_type( topo, HWLOC_OBJ_NUMANODE, core );
+    hwdata->cores_to_numa_node_map[i] = numanode->logical_index;
   }
 
-  hwloc_bitmap_free( iter_cpuset );
-  hwloc_bitmap_free( iter_nodeset );
 
   hwdata->hwloc_topology = (void*) topo;
 
@@ -131,7 +133,7 @@ int bli_hwdata_finalize( void )
   hwdata_t* hwdata = bli_global_hwdata();
   hwloc_topology_t topo = (hwloc_topology_t) hwdata->hwloc_topology;
   hwloc_topology_destroy( topo );
-  hwloc_bitmap_free( (hwloc_bitmap_t) hwdata->hwloc_cpubind_at_init );
+  bli_free_intl( hwdata->numa_nodesets );
   bli_free_intl( hwdata->cores_to_numa_node_map );
 
 #endif
@@ -160,4 +162,59 @@ dim_t* bli_hwdata_get_cores_to_numa_node_map( void )
 {
   hwdata_t* hwdata = bli_global_hwdata();
   return hwdata->cores_to_numa_node_map;
+}
+
+void* bli_hwdata_alloc_on_numanode(siz_t len, dim_t numanode, err_t *rval)
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  hwloc_nodeset_t* numa_nodesets = (hwloc_nodeset_t*) hwdata->numa_nodesets;
+
+  if (numanode >= hwdata->num_numa_nodes)
+  {
+    *rval = BLIS_OUT_OF_BOUNDS;
+    return NULL;
+  }
+
+  // Allocate memory on the specified NUMA node.
+  void* ptr = hwloc_alloc_membind
+              (
+                hwdata->hwloc_topology,
+                len,
+                numa_nodesets[numanode],
+                HWLOC_MEMBIND_BIND,
+                HWLOC_MEMBIND_BYNODESET
+              );
+  if (ptr == NULL)
+  {
+    *rval = BLIS_MALLOC_RETURNED_NULL;
+    return NULL;
+  }
+
+  *rval = BLIS_SUCCESS;
+  return ptr;
+}
+
+void* bli_hwdata_alloc_localto_cpu(siz_t len, dim_t cpu_idx, err_t *rval)
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+
+  if( cpu_idx >= hwdata->num_total_cores )
+  {
+    *rval = BLIS_OUT_OF_BOUNDS;
+    return NULL;
+  }
+
+  dim_t numanode = hwdata->cores_to_numa_node_map[cpu_idx];
+  return bli_hwdata_alloc_on_numanode(len, numanode, rval);
+}
+
+void bli_hwdata_free(void *ptr, siz_t len)
+{
+  hwdata_t* hwdata = bli_global_hwdata();
+  int res = hwloc_free((hwloc_topology_t) hwdata->hwloc_topology, ptr, len);
+  if( res != 0 )
+  {
+    fprintf( stderr, "hwloc_free() failed to free memory at %p of len %zu\n", ptr, len );
+    bli_abort();
+  }
 }

@@ -35,6 +35,7 @@
 */
 
 #include "blis.h"
+#include <hwloc.h>
 
 // Statically initialize the mutex within the packing block allocator object.
 static numa_pba_t global_numa_pba = { .mutex = BLIS_PTHREAD_MUTEX_INITIALIZER };
@@ -251,48 +252,26 @@ void bli_numa_pba_init_poolsets
      (
        const cntx_t* cntx,
 			 const rntm_t* rntm,
-             numa_pba_t*  pba
+             numa_pba_t*  numa_pba
      )
 {
+	err_t rval = BLIS_SUCCESS;
 
-	dim_t num_numa_nodes = bli_hwdata_get_num_numa_nodes();
+	hwdata_t* hwdata = bli_global_hwdata();
+	hwloc_topology_t topo = (hwloc_topology_t) hwdata->hwloc_topology;
+	dim_t num_numa_nodes = hwdata->num_numa_nodes;
+
+	hwloc_nodeset_t* numa_nodesets = (hwloc_nodeset_t*) hwdata->numa_nodesets;
+
+	// Allocate the array of poolset pointers, one for each NUMA node.
+	numa_pba->poolsets = (numa_poolset_t**) bli_calloc_intl(num_numa_nodes * sizeof(numa_poolset_t*), rval);
 
 	// Map each of the packbuf_t values to an index starting at zero.
 	const dim_t index_a      = bli_packbuf_index( BLIS_BUFFER_FOR_A_BLOCK );
 	const dim_t index_b      = bli_packbuf_index( BLIS_BUFFER_FOR_B_PANEL );
 	const dim_t index_c      = bli_packbuf_index( BLIS_BUFFER_FOR_C_PANEL );
 
-	// Alias the pool addresses to convenient identifiers.
-	pool_t*     pool_a       = bli_pba_pool( index_a, pba );
-	pool_t*     pool_b       = bli_pba_pool( index_b, pba );
-	pool_t*     pool_c       = bli_pba_pool( index_c, pba );
-
-	// Start with empty pools.
-	const dim_t num_blocks_a = 0;
-	const dim_t num_blocks_b = 0;
-	const dim_t num_blocks_c = 0;
-
-	siz_t       block_size_a = 0;
-	siz_t       block_size_b = 0;
-	siz_t       block_size_c = 0;
-
-	const dim_t block_ptrs_len_a = 80;
-	const dim_t block_ptrs_len_b = 80;
-	const dim_t block_ptrs_len_c = 80;
-
-	// Use the address alignment sizes designated (at configure-time) for pools.
-	const siz_t align_size_a = BLIS_POOL_ADDR_ALIGN_SIZE_A;
-	const siz_t align_size_b = BLIS_POOL_ADDR_ALIGN_SIZE_B;
-	const siz_t align_size_c = BLIS_POOL_ADDR_ALIGN_SIZE_C;
-
-	// Use the offsets from the above alignments.
-	const siz_t offset_size_a = BLIS_POOL_ADDR_OFFSET_SIZE_A;
-	const siz_t offset_size_b = BLIS_POOL_ADDR_OFFSET_SIZE_B;
-	const siz_t offset_size_c = BLIS_POOL_ADDR_OFFSET_SIZE_C;
-
-	// Use the malloc() and free() designated (at configure-time) for pools.
-	malloc_ft malloc_fp  = BLIS_MALLOC_POOL;
-	free_ft   free_fp    = BLIS_FREE_POOL;
+	const dim_t block_ptrs_len = BLIS_PAGE_SIZE / sizeof( pblk_t );
 
 	// Determine the block size for each memory pool.
 	bli_pba_compute_pool_block_sizes( &block_size_a,
@@ -300,14 +279,57 @@ void bli_numa_pba_init_poolsets
 	                                  &block_size_c,
 	                                  cntx );
 
-	// Initialize the memory pools for A, B, and C.
-	bli_pool_init( num_blocks_a, block_ptrs_len_a, block_size_a, align_size_a,
-	               offset_size_a, malloc_fp, free_fp, pool_a );
-	bli_pool_init( num_blocks_b, block_ptrs_len_b, block_size_b, align_size_b,
-	               offset_size_b, malloc_fp, free_fp, pool_b );
-	bli_pool_init( num_blocks_c, block_ptrs_len_c, block_size_c, align_size_c,
-	               offset_size_c, malloc_fp, free_fp, pool_c );
+	// Create the poolsets
+	for(dim_t i = 0; i < num_numa_nodes; i++)
+	{
+		// Put each poolset on its own NUMA node.
+		void* poolset_i = hwloc_alloc_membind
+		                  (
+												(hwloc_topology_t) hwdata->hwloc_topology,
+												sizeof(numa_poolset_t),
+												numa_nodesets[i],
+												HWLOC_MEMBIND_BIND,
+												HWLOC_MEMBIND_BYNODESET
+											);
+		if (poolset_i == NULL)
+			bli_abort();
+		numa_poolset_t* pi = (numa_poolset_t*) poolset_i;
+
+    // Loop over pools for A, B, C within each poolset.
+		for(dim_t index_type = 0; index_type < 3; index_type++)
+		{
+			bli_pthread_mutex_init( &pi->mutex, NULL );
+			pi->numa_node = i;
+			pi->top_index[index_type] = 0;
+			pi->num_blocks[index_type] = 0;
+			// For now, just grab a whole page for the block pointers.
+			pi->block_ptrs[index_type] = bli_malloc_intl( BLIS_PAGE_SIZE, &rval );
+			pi->block_ptrs_len[index_type] = block_ptrs_len;
+			hwloc_set_area_membind(topo, pi->block_ptrs[index_type], BLIS_PAGE_SIZE,
+			                       numa_nodesets[i], HWLOC_MEMBIND_BIND, HWLOC_MEMBIND_BYNODESET);
+		}
+		
+		numa_pba->poolsets[i] = pi;
+	}
+
+
+
+
+
+
+	// Initialize the pool_t structure.
+	bli_pool_set_block_ptrs( block_ptrs, pool );
+	bli_pool_set_block_ptrs_len( block_ptrs_len, pool );
+	bli_pool_set_top_index( 0, pool );
+	bli_pool_set_num_blocks( num_blocks, pool );
+	bli_pool_set_block_size( block_size, pool );
+	bli_pool_set_align_size( align_size, pool );
+	bli_pool_set_offset_size( offset_size, pool );
+
+
 }
+
+
 
 void bli_pba_finalize_pools
      (

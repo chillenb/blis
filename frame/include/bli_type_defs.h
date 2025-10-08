@@ -1114,9 +1114,6 @@ typedef struct numa_poolset_s
 	dim_t     						num_blocks[3];
 
 	siz_t     						block_size[3];
-	siz_t     						align_size[3];
-	siz_t     						offset_size[3];
-
 } numa_poolset_t;
 
 
@@ -1124,7 +1121,7 @@ typedef struct numa_poolset_s
 
 typedef struct numa_pba_s
 {
-	numa_poolset_t*         poolsets;
+	numa_poolset_t**        poolsets;
 	bli_pthread_mutex_t     mutex;
 
 	// These fields are used for general-purpose allocation.
@@ -1140,9 +1137,12 @@ typedef struct mem_s
 {
 	pblk_t    pblk;
 	packbuf_t buf_type;
-	pool_t*   pool;
+	union
+	{
+		pool_t*   pool;
+		numa_poolset_t* numa_poolset;
+	};
 	siz_t     size;
-	dim_t     numa_node;
 } mem_t;
 
 
@@ -1528,7 +1528,6 @@ typedef struct rntm_s
 typedef struct hwdata_s
 {
 	void*     hwloc_topology;
-	void*     hwloc_cpubind_at_init;
 	void**    numa_nodesets;
 	dim_t*    cores_to_numa_node_map;
 	dim_t     num_numa_nodes;

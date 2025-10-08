@@ -147,47 +147,6 @@ void bli_free_intl( void* p )
 	bli_ffree_noalign( BLIS_FREE_INTL, p );
 }
 
-// Rounds up size to multiple of BLIS_HUGE_PAGE_SIZE (typically 2MiB),
-// allocates memory with posix_memalign, and finally calls
-// madvise with MADV_HUGEPAGE.
-void* bli_hugepage_alloc_intl( size_t size, err_t* r_val )
-{
-	void *p;
-
-	#ifdef BLIS_ENABLE_PBA_HUGEPAGE_NUMA
-	#ifdef BLIS_ENABLE_MEM_TRACING
-	printf( "bli_hugepage_alloc_intl(): size %ld\n",
-	        ( long )size );
-	fflush( stdout );
-	#endif
-
-	const size_t alignment = BLIS_HUGE_PAGE_SIZE;
-	const size_t rounded_size = (((size) + ((alignment) - 1)) / (alignment)) * (alignment);
-
-	posix_memalign( &p, alignment, rounded_size );
-	int retval = 0;
-
-	// call madvise, but only on linux.
-  #ifdef __linux__
-	if ( p != NULL )
-	  retval = madvise( p, rounded_size, MADV_HUGEPAGE );
-  #endif
-
-	if ( bli_error_checking_is_enabled() )
-		bli_fmalloc_post_check( p );
-
-	// The pseudo-return value isn't used yet.
-	if ( retval == 0 )
-		*r_val = BLIS_SUCCESS;
-	else
-	  *r_val = BLIS_FAILURE;
-
-	#else
-	p = bli_malloc_intl(size, r_val);
-	#endif
-
-	return p;
-}
 
 // -----------------------------------------------------------------------------
 
