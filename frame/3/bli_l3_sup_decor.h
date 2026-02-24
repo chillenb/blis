@@ -48,7 +48,7 @@ typedef err_t (*l3supint_ft)
        const obj_t*     c,
        const cntx_t*    cntx,
        const rntm_t*    rntm,
-             thrinfo_t* thread
+          thrinfo_t**   thread
      );
 
 // Level-3 sup thread decorator prototype.

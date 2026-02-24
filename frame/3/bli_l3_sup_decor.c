@@ -82,7 +82,7 @@ static void bli_l3_sup_thread_decorator_entry( thrcomm_t* gl_comm, dim_t tid, co
 	  c,
 	  cntx,
 	  rntm,
-	  thread
+	  &thread
 	);
 
 	// Free the current thread's thrinfo_t structure.
